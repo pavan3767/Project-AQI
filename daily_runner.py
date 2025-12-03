@@ -77,9 +77,9 @@ if 'AQI_calculated' not in train_df.columns:
     exit(1)
 
 # Fit Model (Auto-detect lag order or use fixed)
-model = VECM(train_df)
-# We use a fixed k_ar_diff=1 for stability in automation, or you can use select_order
-vecm_fit = model.fit(k_ar_diff=1) 
+model = VECM(train_df, k_ar_diff=1)
+
+vecm_fit = model.fit()
 
 # Predict next 7 days
 prediction = vecm_fit.predict(steps=7)
@@ -99,4 +99,5 @@ forecast_df = pd.DataFrame({
 
 # Save forecast for the Frontend
 forecast_df.to_csv(FORECAST_FILE, index=False)
+
 print("Forecast generated and saved.")

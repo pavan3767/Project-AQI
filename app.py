@@ -10,7 +10,7 @@ st.markdown("Live data from Perungudi Station | Powered by VECM Model")
 
 # Load Data
 try:
-    history_df = pd.read_csv("Cleaned AQI Bulk data (2nd Dec).csv")
+    history_df = pd.read_csv("Cleaned AQI Bulk data (4th Dec).csv")
     forecast_df = pd.read_csv("latest_forecast.csv")
     
     # Convert dates
@@ -64,4 +64,5 @@ try:
     st.dataframe(forecast_df)
 
 except FileNotFoundError:
+
     st.error("Data files not found. The automation script might not have run yet.")

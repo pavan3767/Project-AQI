@@ -4,6 +4,7 @@ import requests
 import os
 from datetime import datetime
 from statsmodels.tsa.vector_ar.vecm import VECM
+from statsmodels.tsa.vector_ar.vecm import select_coint_rank
 
 # --- CONFIGURATION ---
 FILE_NAME = "Cleaned AQI Bulk data (2nd Dec).csv" # Your existing filename
@@ -77,8 +78,11 @@ if 'AQI_calculated' not in train_df.columns:
     exit(1)
 
 # Fit Model (Auto-detect lag order or use fixed)
-model = VECM(train_df, k_ar_diff=1)
-
+order_res = select_order(train_vecm, maxlags=10, deterministic="li")
+lag_order = order_res.aic
+rank_res = select_coint_rank(train_vecm, det_order=0, k_ar_diff=lag_order, method='trace')
+rank = rank_res.rank
+model = VECM(train_vecm, k_ar_diff=lag_order, coint_rank=rank, deterministic='li')
 vecm_fit = model.fit()
 
 # Predict next 7 days
@@ -101,3 +105,4 @@ forecast_df = pd.DataFrame({
 forecast_df.to_csv(FORECAST_FILE, index=False)
 
 print("Forecast generated and saved.")
+

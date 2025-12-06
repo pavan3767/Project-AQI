@@ -78,11 +78,13 @@ if 'AQI_calculated' not in train_df.columns:
     exit(1)
 
 # Fit Model (Auto-detect lag order or use fixed)
-order_res = select_order(train_vecm, maxlags=10, deterministic="li")
+order_res = select_order(train_df, maxlags=10, deterministic="li")
 lag_order = order_res.aic
-rank_res = select_coint_rank(train_vecm, det_order=0, k_ar_diff=lag_order, method='trace')
+
+rank_res = select_coint_rank(train_df, det_order=0, k_ar_diff=lag_order, method='trace')
 rank = rank_res.rank
-model = VECM(train_vecm, k_ar_diff=lag_order, coint_rank=rank, deterministic='li')
+
+model = VECM(train_df, k_ar_diff=lag_order, coint_rank=rank, deterministic='li')
 vecm_fit = model.fit()
 
 # Predict next 7 days
@@ -105,6 +107,7 @@ forecast_df = pd.DataFrame({
 forecast_df.to_csv(FORECAST_FILE, index=False)
 
 print("Forecast generated and saved.")
+
 
 
 

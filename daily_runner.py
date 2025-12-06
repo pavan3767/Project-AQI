@@ -7,7 +7,7 @@ from statsmodels.tsa.vector_ar.vecm import VECM, select_order
 from statsmodels.tsa.vector_ar.vecm import select_coint_rank
 
 # --- CONFIGURATION ---
-FILE_NAME = "Cleaned AQI Bulk data (4th Dec).csv" # Your existing filename
+FILE_NAME = "Cleaned AQI Bulk data (6th Dec).csv" # Your existing filename
 FORECAST_FILE = "latest_forecast.csv"
 STATION_ID = 13738  # Perungudi
 TOKEN = os.environ.get("WAQI_TOKEN") # Securely loaded from secrets
@@ -113,6 +113,7 @@ forecast_df = pd.DataFrame({
 forecast_df.to_csv(FORECAST_FILE, index=False)
 
 print("Forecast generated and saved.")
+
 
 
 

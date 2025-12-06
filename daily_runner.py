@@ -3,9 +3,8 @@ import numpy as np
 import requests
 import os
 from datetime import datetime
-from statsmodels.tsa.vector_ar.vecm import VECM
+from statsmodels.tsa.vector_ar.vecm import VECM, select_order
 from statsmodels.tsa.vector_ar.vecm import select_coint_rank
-from statsmodels.tsa.vector_ar.vecm import select_order
 
 # --- CONFIGURATION ---
 FILE_NAME = "Cleaned AQI Bulk data (4th Dec).csv" # Your existing filename
@@ -106,6 +105,7 @@ forecast_df = pd.DataFrame({
 forecast_df.to_csv(FORECAST_FILE, index=False)
 
 print("Forecast generated and saved.")
+
 
 
 

@@ -71,11 +71,17 @@ print("Training VECM model...")
 
 # Prepare data for VECM (Numeric only, drop non-numeric columns like 'Checks')
 # We select columns that have valid data
-train_df = df.select_dtypes(include=[np.number]).dropna()
+train_df = df[['Date', 'AQI_calculated', 'PM2.5_SubIndex', 'PM10_SubIndex', 'Temp', 'CO_SubIndex']].copy()
+train_df['Date'] = pd.to_datetime(train_df['Date'])
+train_df = train_df.set_index('Date')
 # Ensure AQI_calculated is included
 if 'AQI_calculated' not in train_df.columns:
     print("Error: AQI_calculated column missing")
     exit(1)
+    
+# Dataset cleaning to make the data usable for training VECM
+train_df = train_df.fillna(method='ffill').fillna(method='bfill')
+train_df = train_df.dropna()
 
 # Fit Model (Auto-detect lag order or use fixed)
 order_res = select_order(train_df, maxlags=10, deterministic="li")
@@ -107,6 +113,7 @@ forecast_df = pd.DataFrame({
 forecast_df.to_csv(FORECAST_FILE, index=False)
 
 print("Forecast generated and saved.")
+
 
 
 

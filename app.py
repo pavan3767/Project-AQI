@@ -70,53 +70,54 @@ try:
                 f"**AQI is Hazardous ({aqi_value})!** \n\n"
                 "🏠 **Action:** Avoid ALL outdoor activities. Keep windows closed, use an Air Purifier inside, and stay hydrated for good health."
             )
-        # Call the function where you want the box to appear
-        col4.metric("Recommended Action:", display_aqi_recommendation(latest_aqi))
+    # Call the function where you want the box to appear
+    col4.metric("Recommended Action:", display_aqi_recommendation(latest_aqi))
 
-        # --- MAIN PLOT ---
-        st.subheader("Historical Trend + 7 Day Prediction")
-            
-        fig = go.Figure()
-            
-        # Historical Data (Last 30 days for clarity)
-         recent_history = history_df.tail(30)
-        fig.add_trace(go.Scatter(
-            x=recent_history['Date'], 
-            y=recent_history['AQI_calculated'],
-            mode='lines+markers',
-            name='Actual History',
-            line=dict(color='blue')
-        ))
-            
-        # Forecast Data
-        fig.add_trace(go.Scatter(
-            x=forecast_df['Date'], 
-            y=forecast_df['Predicted_AQI'],
-            mode='lines+markers',
-            name='VECM Forecast',
-            line=dict(color='red', dash='dash')
-        ))
+    # --- MAIN PLOT ---
+    st.subheader("Historical Trend + 7 Day Prediction")
         
-        fig.update_layout(height=500, xaxis_title="Date", yaxis_title="AQI")
-        st.plotly_chart(fig, use_container_width=True)
-    
-        # --- DATA TABLE (Formatted) ---
-        st.subheader("Detailed Forecast")
-    
-        # 1. Clean the 'Date' column (Remove 00:00:00 time component)
-        forecast_df['Date'] = forecast_df['Date'].dt.date
-    
-        # 2. Round AQI to whole numbers
-        forecast_df['Predicted_AQI'] = forecast_df['Predicted_AQI'].round(0).astype(int)
-    
-    
-        forecast_df['Status'] = forecast_df['Predicted_AQI'].apply(get_aqi_status)
+    fig = go.Figure()
         
-        # 1. Create a Styler object to center text and show the table
-        st.dataframe(forecast_df,hide_index=True)
+    # Historical Data (Last 30 days for clarity)
+     recent_history = history_df.tail(30)
+    fig.add_trace(go.Scatter(
+        x=recent_history['Date'], 
+        y=recent_history['AQI_calculated'],
+        mode='lines+markers',
+        name='Actual History',
+        line=dict(color='blue')
+    ))
+        
+    # Forecast Data
+    fig.add_trace(go.Scatter(
+        x=forecast_df['Date'], 
+        y=forecast_df['Predicted_AQI'],
+        mode='lines+markers',
+        name='VECM Forecast',
+        line=dict(color='red', dash='dash')
+    ))
+    
+    fig.update_layout(height=500, xaxis_title="Date", yaxis_title="AQI")
+    st.plotly_chart(fig, use_container_width=True)
+
+    # --- DATA TABLE (Formatted) ---
+    st.subheader("Detailed Forecast")
+
+    # 1. Clean the 'Date' column (Remove 00:00:00 time component)
+    forecast_df['Date'] = forecast_df['Date'].dt.date
+
+    # 2. Round AQI to whole numbers
+    forecast_df['Predicted_AQI'] = forecast_df['Predicted_AQI'].round(0).astype(int)
+
+
+    forecast_df['Status'] = forecast_df['Predicted_AQI'].apply(get_aqi_status)
+    
+    # 1. Create a Styler object to center text and show the table
+    st.dataframe(forecast_df,hide_index=True)
 
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

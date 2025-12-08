@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 # Page Config
 st.set_page_config(page_title="AQI Forecaster", layout="wide")
 
-st.title("🏭 Chennai AQI Monitor & 7-Day Forecast")
+st.title("Chennai AQI Monitor & 7-Day Forecast")
 st.markdown("Live data from Perungudi Station | Powered by VECM Model")
 
 # Load Data
@@ -13,7 +13,7 @@ try:
     history_df = pd.read_csv("Cleaned AQI Bulk data (6th Dec).csv")
     forecast_df = pd.read_csv("latest_forecast.csv")
     
-    # Convert dates
+    # Convert dates to datetime objects initially for calculation/plotting
     history_df['Date'] = pd.to_datetime(history_df['Date'])
     forecast_df['Date'] = pd.to_datetime(forecast_df['Date'])
 
@@ -25,7 +25,7 @@ try:
     col1.metric("Latest Date", latest_date)
     col2.metric("Current AQI", int(latest_aqi))
     
-    # Determine Status
+    # Determine Status for KPI
     if latest_aqi <= 50: status = "Good 🟢"
     elif latest_aqi <= 100: status = "Moderate 🟡"
     elif latest_aqi <= 200: status = "Poor 🟠"
@@ -59,11 +59,30 @@ try:
     fig.update_layout(height=500, xaxis_title="Date", yaxis_title="AQI")
     st.plotly_chart(fig, use_container_width=True)
 
-    # --- DATA TABLE ---
+    # --- DATA TABLE (Formatted) ---
     st.subheader("Detailed Forecast")
-    st.dataframe(forecast_df)
+
+    # 1. Clean the 'Date' column (Remove 00:00:00 time component)
+    forecast_df['Date'] = forecast_df['Date'].dt.date
+
+    # 2. Round AQI to whole numbers
+    forecast_df['Predicted_AQI'] = forecast_df['Predicted_AQI'].round(0).astype(int)
+
+    # 3. Add the 'Status' Column with Emojis
+    def get_aqi_status(aqi):
+        if aqi <= 50:
+            return "Good 🟢"
+        elif aqi <= 100:
+            return "Moderate 🟡"
+        elif aqi <= 200:
+            return "Poor 🟠"
+        else:
+            return "Hazardous 🔴"
+
+    forecast_df['Status'] = forecast_df['Predicted_AQI'].apply(get_aqi_status)
+
+    # Display the final formatted table
+    st.dataframe(forecast_df, use_container_width=True)
 
 except FileNotFoundError:
-
     st.error("Data files not found. The automation script might not have run yet.")
-

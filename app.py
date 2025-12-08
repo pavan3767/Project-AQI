@@ -71,7 +71,7 @@ try:
                 "🏠 **Action:** Avoid ALL outdoor activities. Keep windows closed, use an Air Purifier inside, and stay hydrated for good health."
             )
     # Call the function where you want the box to appear
-    col4.metric("Recommended Action:", display_aqi_recommendation(latest_aqi))
+    display_aqi_recommendation(latest_aqi)
 
     # --- MAIN PLOT ---
     st.subheader("Historical Trend + 7 Day Prediction")
@@ -117,6 +117,7 @@ try:
 
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

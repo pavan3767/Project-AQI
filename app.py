@@ -25,12 +25,17 @@ try:
     col1.metric("Latest Date", latest_date)
     col2.metric("Current AQI", int(latest_aqi))
     
-    # Determine Status for KPI
-    if latest_aqi <= 50: status = "Good 🟢"
-    elif latest_aqi <= 100: status = "Moderate 🟡"
-    elif latest_aqi <= 200: status = "Poor 🟠"
-    else: status = "Hazardous 🔴"
-    col3.metric("Status", status)
+    # 3. Add the 'Status' Column with Emojis
+    def get_aqi_status(aqi):
+        if aqi <= 50:
+            return "Good 🟢"
+        elif aqi <= 100:
+            return "Moderate 🟡"
+        elif aqi <= 200:
+            return "Poor 🟠"
+        else:
+            return "Hazardous 🔴"
+    col3.metric("Status", get_aqi_status(latest_aqi))
 
     # --- MAIN PLOT ---
     st.subheader("Historical Trend + 7 Day Prediction")
@@ -68,16 +73,6 @@ try:
     # 2. Round AQI to whole numbers
     forecast_df['Predicted_AQI'] = forecast_df['Predicted_AQI'].round(0).astype(int)
 
-    # 3. Add the 'Status' Column with Emojis
-    def get_aqi_status(aqi):
-        if aqi <= 50:
-            return "Good 🟢"
-        elif aqi <= 100:
-            return "Moderate 🟡"
-        elif aqi <= 200:
-            return "Poor 🟠"
-        else:
-            return "Hazardous 🔴"
 
     forecast_df['Status'] = forecast_df['Predicted_AQI'].apply(get_aqi_status)
     
@@ -86,6 +81,7 @@ try:
 
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

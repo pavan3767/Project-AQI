@@ -80,23 +80,26 @@ try:
             return "Hazardous 🔴"
 
     forecast_df['Status'] = forecast_df['Predicted_AQI'].apply(get_aqi_status)
-    # 1. Create a Styler object to center text
-    styled_df = forecast_df.style.set_properties(**{'text-align': 'center'})
     
-    # STEP 2: Center the column headers to match the data
-    styled_df = styled_df.set_table_styles(
-        [dict(selector='th', props=[('text-align', 'center')])]
-    )
-    
-    # Display the final formatted table
+    # 1. Create a Styler object to center text and show the table
     st.dataframe(
-    styled_df,
-    hide_index=True,  # Removes the 0,1,2,3 column
-    use_container_width=True # Optional: stretches table to fill width
+        forecast_df, 
+        hide_index=True,
+        use_container_width=True,
+        column_config={
+            "Predicted_AQI": st.column_config.NumberColumn(
+                "AQI",    # <--- Renaming this makes the column narrower
+                format="%d" 
+            ),
+            "Date": st.column_config.DateColumn(
+                "Date",
+                format="YYYY-MM-DD"
+            )
+        }
     )
-
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

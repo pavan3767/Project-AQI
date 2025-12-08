@@ -82,23 +82,11 @@ try:
     forecast_df['Status'] = forecast_df['Predicted_AQI'].apply(get_aqi_status)
     
     # 1. Create a Styler object to center text and show the table
-    st.dataframe(
-        forecast_df, 
-        hide_index=True,
-        use_container_width=True,
-        column_config={
-            "Predicted_AQI": st.column_config.NumberColumn(
-                "AQI",    # <--- Renaming this makes the column narrower
-                format="%d" 
-            ),
-            "Date": st.column_config.DateColumn(
-                "Date",
-                format="YYYY-MM-DD"
-            )
-        }
-    )
+    st.dataframe(forecast_df)
+
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

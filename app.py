@@ -77,10 +77,11 @@ try:
     forecast_df['Status'] = forecast_df['Predicted_AQI'].apply(get_aqi_status)
     
     # 1. Create a Styler object to center text and show the table
-    st.dataframe(forecast_df)
+    st.dataframe(forecast_df,hide_index=True)
 
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

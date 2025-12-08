@@ -38,37 +38,34 @@ try:
     col3.metric("Status", get_aqi_status(latest_aqi))
 
     def display_aqi_recommendation(aqi_value):
-        """
-        Displays a recommendation card based on the AQI value.
-        """
         st.subheader("💡 Health Recommendations")
     
-        # 1. Good (0-50)
+        # 1. Good (0-50) -> Green Box
         if aqi_value <= 50:
             st.success(
-                f"**AQI is Good ({aqi_value})** \n\n"
-                "🌳 **Action:** The air is fresh! It's a perfect time to go for a walk in a nearby park, exercise outdoors, and enjoy nature."
+                "**Status: Good** \n\n"
+                "🌳 **Action:** The air is fresh! Enjoy the outdoors, open your windows, and take a walk in the park."
             )
     
-        # 2. Moderate (51-100)
+        # 2. Moderate (51-100) -> Blue Box
         elif 50 < aqi_value <= 100:
-            st.warning(
-                f"**AQI is Moderate ({aqi_value})** \n\n"
-                "⚠️ **Action:** Air quality is acceptable. However, if you are unusually sensitive to air pollution, consider limiting prolonged outdoor exertion."
+            st.info(
+                "**Status: Moderate** \n\n"
+                "⚠️ **Action:** Air quality is acceptable. Sensitive individuals should consider limiting prolonged outdoor exertion."
             )
     
-        # 3. Unhealthy / Poor (101-200)
+        # 3. Poor (101-200) -> Yellow/Amber Box (Fixed the Red Error issue)
         elif 100 < aqi_value <= 200:
-            st.error(
-                f"**AQI is Poor ({aqi_value})** \n\n"
+            st.warning(
+                "**Status: Poor** \n\n"
                 "😷 **Action:** Everyone may begin to experience health effects. Limit outdoor activities and wear a mask if you need to go out."
             )
     
-        # 4. Hazardous (201+)
+        # 4. Hazardous (201+) -> Red Box (Only for extreme emergencies)
         else:
             st.error(
-                f"**AQI is Hazardous ({aqi_value})!** \n\n"
-                "🏠 **Action:** Avoid ALL outdoor activities. Keep windows closed, use an Air Purifier inside, and stay hydrated for good health."
+                "**Status: Hazardous** \n\n"
+                "🏠 **Action:** Avoid ALL outdoor activities. Keep windows closed, use an Air Purifier, and stay hydrated."
             )
     # Call the function where you want the box to appear
     display_aqi_recommendation(latest_aqi)
@@ -117,6 +114,7 @@ try:
 
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

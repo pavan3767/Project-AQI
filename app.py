@@ -81,11 +81,11 @@ try:
 
     forecast_df['Status'] = forecast_df['Predicted_AQI'].apply(get_aqi_status)
     # 1. Create a Styler object to center text
-    styled_df = forecast_df.style.set_properties(**{'text-align': 'center'})
+    styled_df = data.style.set_properties(**{'text-align': 'center'})
     
-    # 2. Also center the headers (th) specifically
+    # STEP 2: Center the column headers to match the data
     styled_df = styled_df.set_table_styles(
-    [dict(selector='th', props=[('text-align', 'center')])]
+        [dict(selector='th', props=[('text-align', 'center')])]
     )
     
     # Display the final formatted table
@@ -97,6 +97,7 @@ try:
 
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

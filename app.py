@@ -88,17 +88,15 @@ try:
     [dict(selector='th', props=[('text-align', 'center')])]
     )
     
-    # 3. Display it
+    # Display the final formatted table
     st.dataframe(
     styled_df,
     hide_index=True,  # Removes the 0,1,2,3 column
     use_container_width=True # Optional: stretches table to fill width
     )
 
-    # Display the final formatted table
-    st.dataframe(forecast_df, use_container_width=True)
-
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 

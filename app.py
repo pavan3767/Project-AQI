@@ -37,7 +37,7 @@ try:
             return "Unhealthy"
         elif aqi <= 300:
             return "Very Unhealthy"
-        else aqi > 300:
+        else:
             return "Hazardous"
     col3.metric("Status", get_aqi_status(latest_aqi))
 
@@ -118,6 +118,7 @@ try:
 
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

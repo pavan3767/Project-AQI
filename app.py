@@ -28,17 +28,17 @@ try:
     # 3. Add the 'Status' Column with Emojis
     def get_aqi_status(aqi):
         if aqi <= 50:
-            return "GOOD"
+            return "Good 🟢"
         elif aqi <= 100:
-            return "MODERATE"
+            return "Moderate 🟡"
         elif aqi <= 150:
-            return "UNHEALTHY FOR SENSITIVE GROUPS"
+            return "Poor 🟠"
         elif aqi <= 200:
-            return "UNHEALTHY"
+            return "Unhealthy 🔴"
         elif aqi <= 300:
-            return "VERY UNHEALTHY"
+            return "Very Unhealthy 🔴"
         else:
-            return "HAZARDOUS"
+            return "Hazardous 🟤"
     col3.metric("Status", get_aqi_status(latest_aqi))
 
     def display_aqi_recommendation(aqi_value):
@@ -47,28 +47,24 @@ try:
         # 1. Good (0-50) -> Green Box
         if aqi_value <= 50:
             st.success(
-                "**Status: Good** \n\n"
                 "🌳 **Action:** The air is fresh! Enjoy the outdoors, open your windows, and take a walk in the park."
             )
     
         # 2. Moderate (51-100) -> Blue Box
         elif 50 < aqi_value <= 100:
             st.info(
-                "**Status: Moderate** \n\n"
                 "⚠️ **Action:** Air quality is acceptable. Sensitive individuals should consider limiting prolonged outdoor exertion."
             )
     
         # 3. Poor (101-200) -> Yellow/Amber Box (Fixed the Red Error issue)
         elif 100 < aqi_value <= 200:
             st.warning(
-                "**Status: Poor** \n\n"
                 "😷 **Action:** Everyone may begin to experience health effects. Limit outdoor activities and wear a mask if you need to go out."
             )
     
         # 4. Hazardous (201+) -> Red Box (Only for extreme emergencies)
         else:
             st.error(
-                "**Status: Hazardous** \n\n"
                 "🏠 **Action:** Avoid ALL outdoor activities. Keep windows closed, use an Air Purifier, and stay hydrated."
             )
     # Call the function where you want the box to appear
@@ -118,6 +114,7 @@ try:
 
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

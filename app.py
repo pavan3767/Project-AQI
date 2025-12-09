@@ -42,7 +42,7 @@ try:
     col3.metric("Status", get_aqi_status(latest_aqi))
 
     def display_aqi_recommendation(aqi_value):
-        st.subheader("💡 Health Recommendations")
+        st.subheader("Health Recommendations")
     
         # 1. Good (0-50) -> Green Box
         if aqi_value <= 50:
@@ -118,6 +118,7 @@ try:
 
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

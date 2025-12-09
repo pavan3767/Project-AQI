@@ -28,13 +28,17 @@ try:
     # 3. Add the 'Status' Column with Emojis
     def get_aqi_status(aqi):
         if aqi <= 50:
-            return "Good 🟢"
+            return "Good"
         elif aqi <= 100:
-            return "Moderate 🟡"
+            return "Moderate"
+        elif aqi <= 150:
+            return "Unhealthy for Sensitive Groups"
         elif aqi <= 200:
-            return "Poor 🟠"
-        else:
-            return "Hazardous 🔴"
+            return "Unhealthy"
+        elif aqi <= 300:
+            return "Very Unhealthy"
+        else aqi > 300:
+            return "Hazardous"
     col3.metric("Status", get_aqi_status(latest_aqi))
 
     def display_aqi_recommendation(aqi_value):
@@ -114,6 +118,7 @@ try:
 
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

@@ -3,7 +3,7 @@ name: Daily AQI Update
 on:
   schedule:
     # 18:20 UTC is 23:50 IST (India Standard Time)
-    - cron: '30 16 * * *'
+    - cron: '30 4 * * *'
   workflow_dispatch: # Allows manual trigger button
 
 permissions:

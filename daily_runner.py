@@ -7,7 +7,7 @@ from statsmodels.tsa.vector_ar.vecm import VECM, select_order
 from statsmodels.tsa.vector_ar.vecm import select_coint_rank
 
 # --- CONFIGURATION ---
-FILE_NAME = "Cleaned AQI Bulk data (6th Dec).csv" # Your existing filename
+FILE_NAME = "Cleaned AQI Bulk data (22nd Jan).csv" # Your existing filename
 FORECAST_FILE = "latest_forecast.csv"
 STATION_ID = 13738  # Perungudi
 TOKEN = os.environ.get("WAQI_TOKEN") # Securely loaded from secrets
@@ -45,7 +45,7 @@ try:
         'Ozone': iaqi.get('o3', {}).get('v', np.nan),
         'RH': iaqi.get('h', {}).get('v', np.nan),
         'Temp': iaqi.get('t', {}).get('v', np.nan),
-        'AQI_calculated': data['data']['aqi'] # Map 'aqi' to your target column
+        'AQI': data['data']['aqi'] # Map 'aqi' to your target column
     }
     
     # Append new row
@@ -113,6 +113,7 @@ forecast_df = pd.DataFrame({
 forecast_df.to_csv(FORECAST_FILE, index=False)
 
 print("Forecast generated and saved.")
+
 
 
 

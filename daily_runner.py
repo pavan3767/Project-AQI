@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 from statsmodels.tsa.vector_ar.vecm import VECM, select_order
 from statsmodels.tsa.vector_ar.vecm import select_coint_rank
+from AQI_SubIndex import get_all_subindices_single
 
 # --- CONFIGURATION ---
 FILE_NAME = "Cleaned AQI Bulk data (22nd Jan).csv" # Your existing filename
@@ -48,12 +49,18 @@ try:
         'AQI': data['data']['aqi'] # Map 'aqi' to your target column
     }
     
-    # Append new row
-    new_df = pd.DataFrame([new_row])
+    # Pass the single row through your sub-index logic
+    new_row_final = get_all_subindices_single(new_row_raw)
+    
+    # Append to the main dataframe
+    new_df = pd.DataFrame([new_row_final])
     
     # Check if today's date already exists to avoid duplicates
     if new_df['Date'].iloc[0] not in df['Date'].values:
-        df = pd.concat([df, new_df], ignore_index=True)
+        # Identify shared columns
+        common_cols = df.columns.intersection(new_df.columns)
+        # Filter both dataframes to only these columns and concatenate
+        df = pd.concat([df[common_cols], new_df[common_cols]], ignore_index=True)
         # Forward fill missing values (like NO, NOx if API doesn't provide them)
         df = df.ffill()
         # Save updated history
@@ -113,6 +120,7 @@ forecast_df = pd.DataFrame({
 forecast_df.to_csv(FORECAST_FILE, index=False)
 
 print("Forecast generated and saved.")
+
 
 
 

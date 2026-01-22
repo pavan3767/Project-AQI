@@ -79,7 +79,7 @@ try:
     recent_history = history_df.tail(30)
     fig.add_trace(go.Scatter(
         x=recent_history['Date'], 
-        y=recent_history['AQI_calculated'],
+        y=recent_history['AQI'],
         mode='lines+markers',
         name='Actual History',
         line=dict(color='blue')
@@ -114,6 +114,7 @@ try:
 
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

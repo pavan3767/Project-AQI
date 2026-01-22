@@ -18,7 +18,7 @@ try:
     forecast_df['Date'] = pd.to_datetime(forecast_df['Date'])
 
     # --- KPI METRICS ---
-    latest_aqi = history_df['AQI_calculated'].iloc[-1]
+    latest_aqi = history_df['AQI'].iloc[-1]
     latest_date = history_df['Date'].iloc[-1].strftime('%Y-%m-%d')
     
     col1, col2, col3,col4 = st.columns(4)
@@ -114,6 +114,7 @@ try:
 
 except FileNotFoundError:
     st.error("Data files not found. The automation script might not have run yet.")
+
 
 
 

@@ -8,7 +8,7 @@ from statsmodels.tsa.vector_ar.vecm import select_coint_rank
 from AQI_SubIndex import get_all_subindices_single
 
 # --- CONFIGURATION ---
-FILE_NAME = "Cleaned AQI Bulk data (22nd Jan).csv" # Your existing filename
+FILE_NAME = "Cleaned AQI Bulk data (26th Jan).csv" # Your existing filename
 FORECAST_FILE = "latest_forecast.csv"
 STATION_ID = 13738  # Perungudi
 TOKEN = os.environ.get("WAQI_TOKEN") # Securely loaded from secrets
@@ -78,12 +78,12 @@ print("Training VECM model...")
 
 # Prepare data for VECM (Numeric only, drop non-numeric columns like 'Checks')
 # We select columns that have valid data
-train_df = df[['Date', 'AQI_calculated', 'PM2.5_SubIndex', 'PM10_SubIndex', 'Temp', 'CO_SubIndex']].copy()
+train_df = df[['Date', 'AQI', 'PM2.5_SubIndex', 'PM10_SubIndex', 'Temp', 'CO_SubIndex']].copy()
 train_df['Date'] = pd.to_datetime(train_df['Date'])
 train_df = train_df.set_index('Date')
 # Ensure AQI_calculated is included
-if 'AQI_calculated' not in train_df.columns:
-    print("Error: AQI_calculated column missing")
+if 'AQI' not in train_df.columns:
+    print("Error: AQI column missing")
     exit(1)
     
 # Dataset cleaning to make the data usable for training VECM
@@ -107,8 +107,8 @@ prediction = vecm_fit.predict(steps=7)
 last_date = df['Date'].iloc[-1]
 future_dates = [last_date + pd.Timedelta(days=i) for i in range(1, 8)]
 
-# We are interested mainly in 'AQI_calculated' column index
-aqi_col_index = train_df.columns.get_loc('AQI_calculated')
+# We are interested mainly in 'AQI' column index
+aqi_col_index = train_df.columns.get_loc('AQI')
 predicted_aqi = prediction[:, aqi_col_index]
 
 forecast_df = pd.DataFrame({
@@ -120,6 +120,7 @@ forecast_df = pd.DataFrame({
 forecast_df.to_csv(FORECAST_FILE, index=False)
 
 print("Forecast generated and saved.")
+
 
 
 

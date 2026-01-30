@@ -113,31 +113,37 @@ def get_O3_subindex(x):
     elif x <= 748:
         return 300 + (x - 208) * 100 / 539
     elif x > 748:
-        return 400 + (x - 400) * 100 / 539
+        return 400 + (x - 748) * 100 / 539
     else:
         return 0
 
+def safe_val(x):
+    if x is None:
+        return 0
+    if isinstance(x, float) and np.isnan(x):
+        return 0
+    return x
+
+
 def get_all_subindices_single(raw_data):
-    """
-    Calculates sub-indices and identifies the Primary Pollutant.
-    """
+
     processed = raw_data.copy()
-    
-    # 1. Calculate individual sub-indices
+
     sub_indices = {
-        'PM2.5_SubIndex': get_PM25_subindex(raw_data.get('PM2.5', 0)),
-        'PM10_SubIndex': get_PM10_subindex(raw_data.get('PM10', 0)),
-        'SO2_SubIndex': get_SO2_subindex(raw_data.get('SO2', 0)),
-        'NOx_SubIndex': get_NOx_subindex(raw_data.get('NOx', 0)),
-        'NH3_SubIndex': get_NH3_subindex(raw_data.get('NH3', 0)),
-        'CO_SubIndex': get_CO_subindex(raw_data.get('CO', 0)),
-        'O3_SubIndex': get_O3_subindex(raw_data.get('Ozone', 0))
+        'PM2.5_SubIndex': get_PM25_subindex(safe_val(raw_data.get('PM2.5'))),
+        'PM10_SubIndex': get_PM10_subindex(safe_val(raw_data.get('PM10'))),
+        'SO2_SubIndex': get_SO2_subindex(safe_val(raw_data.get('SO2'))),
+        'NOx_SubIndex': get_NOx_subindex(safe_val(raw_data.get('NO2'))),
+        'NH3_SubIndex': get_NH3_subindex(safe_val(raw_data.get('NH3'))),
+        'CO_SubIndex': get_CO_subindex(safe_val(raw_data.get('CO'))),
+        'O3_SubIndex': get_O3_subindex(safe_val(raw_data.get('Ozone')))
     }
-    # 3. Assign Primary Pollutant (the one with the max sub-index)
-    # We only consider it a primary pollutant if the value is > 0
+
+    processed.update(sub_indices)
+
     if max(sub_indices.values()) > 0:
         processed['Primary_Pollutant'] = max(sub_indices, key=sub_indices.get)
     else:
         processed['Primary_Pollutant'] = "None"
-        
+
     return processed

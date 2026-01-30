@@ -3,23 +3,35 @@ import numpy as np
 import requests
 import os
 from datetime import datetime
-from statsmodels.tsa.vector_ar.vecm import VECM, select_order, select_coint_rank
-from AQI_SubIndex import get_all_subindices_single
 
-# --- CONFIGURATION ---
+from AQI_SubIndex import get_all_subindices_single
+from drift_detection import check_adwin_drift, check_psi_drift, rolling_mape
+from model_selector import calculate_drift_score, select_model
+from forecast_models import vecm_forecast, prophet_forecast
+
+
+# ---------------- CONFIG ----------------
 FILE_NAME = "Cleaned AQI Bulk data (26th Jan).csv"
 FORECAST_FILE = "latest_forecast.csv"
+DRIFT_LOG_FILE = "drift_log.csv"
+MODEL_LOG_FILE = "model_log.csv"
+
 STATION_ID = 13738
 TOKEN = os.environ.get("WAQI_TOKEN")
+
+FORECAST_STEPS = 7
+
 
 # ---------------- STEP 1: LOAD HISTORY ----------------
 try:
     df = pd.read_csv(FILE_NAME)
     df['Date'] = pd.to_datetime(df['Date'])
     df = df.sort_values('Date')
-    print("Loaded history. Latest date:", df['Date'].max())
+    print("History Loaded. Latest Date:", df['Date'].max())
+
 except FileNotFoundError:
-    raise RuntimeError("Historical data file not found")
+    raise RuntimeError("Historical AQI file not found")
+
 
 # ---------------- STEP 2: FETCH LIVE DATA ----------------
 print("Fetching live data...")
@@ -30,117 +42,134 @@ try:
     response = requests.get(url, timeout=30)
     data = response.json()
 
-    if data.get('status') != 'ok':
-        raise RuntimeError(f"WAQI API Error: {data}")
+    if data.get("status") != "ok":
+        raise RuntimeError("WAQI API returned error")
 
-    iaqi = data['data'].get('iaqi', {})
+    iaqi = data["data"].get("iaqi", {})
 
-    today_date = pd.to_datetime(datetime.now().date())
+    today = pd.to_datetime(datetime.now().date())
 
     new_row = {
-        'Date': today_date,
-        'PM2.5': iaqi.get('pm25', {}).get('v', np.nan),
-        'PM10': iaqi.get('pm10', {}).get('v', np.nan),
-        'NO2': iaqi.get('no2', {}).get('v', np.nan),
-        'NH3': iaqi.get('nh3', {}).get('v', np.nan),
-        'SO2': iaqi.get('so2', {}).get('v', np.nan),
-        'CO': iaqi.get('co', {}).get('v', np.nan),
-        'Ozone': iaqi.get('o3', {}).get('v', np.nan),
-        'RH': iaqi.get('h', {}).get('v', np.nan),
-        'Temp': iaqi.get('t', {}).get('v', np.nan),
-        'AQI': data['data'].get('aqi', np.nan)
+        "Date": today,
+        "PM2.5": iaqi.get("pm25", {}).get("v", np.nan),
+        "PM10": iaqi.get("pm10", {}).get("v", np.nan),
+        "NO2": iaqi.get("no2", {}).get("v", np.nan),
+        "NH3": iaqi.get("nh3", {}).get("v", np.nan),
+        "SO2": iaqi.get("so2", {}).get("v", np.nan),
+        "CO": iaqi.get("co", {}).get("v", np.nan),
+        "Ozone": iaqi.get("o3", {}).get("v", np.nan),
+        "RH": iaqi.get("h", {}).get("v", np.nan),
+        "Temp": iaqi.get("t", {}).get("v", np.nan),
+        "AQI": data["data"].get("aqi", np.nan)
     }
 
     new_row_final = get_all_subindices_single(new_row)
     new_df = pd.DataFrame([new_row_final])
 
-    # --- SAFE DUPLICATE DATE CHECK ---
-    already_exists = (df['Date'].dt.date == today_date.date()).any()
+    exists = (df["Date"].dt.date == today.date()).any()
 
-    if not already_exists:
+    if not exists:
+        print("Appending new row for:", today.date())
 
-        print("Appending new row for:", today_date.date())
-
-        # ⭐ FIX: UNION CONCAT (Never shrink schema)
         df = pd.concat([df, new_df], ignore_index=True, sort=False)
-
         df = df.ffill()
 
         df.to_csv(FILE_NAME, index=False)
 
-        print("New data appended and saved")
+        print("New AQI row added successfully")
 
     else:
-        print("Today already exists in dataset")
+        print("Today already exists — skipping append")
 
 except Exception as e:
     print("CRITICAL: API ingestion failed:", e)
-    raise  # ⭐ FAIL WORKFLOW (VERY IMPORTANT)
+    raise
 
-# ---------------- STEP 3: VALIDATE REQUIRED COLUMNS ----------------
-required_cols = [
-    'AQI',
-    'PM2.5_SubIndex',
-    'PM10_SubIndex',
-    'Temp',
-    'CO_SubIndex'
-]
 
-missing_cols = [c for c in required_cols if c not in df.columns]
+# ---------------- STEP 3: DRIFT DETECTION ----------------
 
-if missing_cols:
-    raise RuntimeError(f"Missing required columns for VECM: {missing_cols}")
+print("Running Drift Detection...")
 
-# ---------------- STEP 4: VECM FORECASTING ----------------
-print("Training VECM model...")
+latest = df.iloc[-1]
 
-train_df = df[['Date', 'AQI', 'PM2.5_SubIndex', 'PM10_SubIndex', 'Temp', 'CO_SubIndex']].copy()
+adwin_flags = check_adwin_drift({
+    "AQI": latest["AQI"],
+    "PM25": latest["PM2.5_SubIndex"],
+    "PM10": latest["PM10_SubIndex"],
+    "CO": latest["CO_SubIndex"]
+})
 
-train_df['Date'] = pd.to_datetime(train_df['Date'])
-train_df = train_df.set_index('Date')
+psi_scores = {
+    "AQI": check_psi_drift(df, "AQI"),
+    "PM25": check_psi_drift(df, "PM2.5_SubIndex")
+}
 
-train_df = train_df.ffill().bfill().dropna()
+# For now simple placeholder
+mape_score = 10
 
-if len(train_df) < 50:
-    raise RuntimeError("Not enough data for VECM training")
+drift_score = calculate_drift_score(adwin_flags, psi_scores, mape_score)
+model_choice = select_model(drift_score)
 
-# --- MODEL FIT ---
-order_res = select_order(train_df, maxlags=10, deterministic="li")
-lag_order = order_res.aic
+print("Drift Score:", drift_score)
+print("Model Selected:", model_choice)
 
-rank_res = select_coint_rank(
-    train_df,
-    det_order=0,
-    k_ar_diff=lag_order,
-    method='trace'
-)
 
-rank = rank_res.rank
+# ---------------- STEP 4: FORECAST ----------------
 
-model = VECM(
-    train_df,
-    k_ar_diff=lag_order,
-    coint_rank=rank,
-    deterministic='li'
-)
+print("Generating Forecast...")
 
-vecm_fit = model.fit()
+if model_choice == "PROPHET":
+    predicted_aqi = prophet_forecast(df, FORECAST_STEPS)
 
-# ---------------- FORECAST ----------------
-prediction = vecm_fit.predict(steps=7)
+else:
+    predicted_aqi = vecm_forecast(df, FORECAST_STEPS)
 
-last_date = df['Date'].iloc[-1]
-future_dates = [last_date + pd.Timedelta(days=i) for i in range(1, 8)]
 
-aqi_idx = train_df.columns.get_loc('AQI')
-predicted_aqi = prediction[:, aqi_idx]
+last_date = df["Date"].iloc[-1]
+future_dates = [last_date + pd.Timedelta(days=i) for i in range(1, FORECAST_STEPS + 1)]
 
 forecast_df = pd.DataFrame({
-    'Date': future_dates,
-    'Predicted_AQI': predicted_aqi
+    "Date": future_dates,
+    "Predicted_AQI": predicted_aqi
 })
 
 forecast_df.to_csv(FORECAST_FILE, index=False)
 
-print("Forecast generated and saved")
-print("Pipeline completed successfully")
+print("Forecast Saved")
+
+
+# ---------------- STEP 5: LOG DRIFT ----------------
+
+drift_log_entry = pd.DataFrame([{
+    "Date": datetime.now(),
+    "ADWIN_AQI": adwin_flags["AQI"],
+    "ADWIN_PM25": adwin_flags["PM25"],
+    "ADWIN_PM10": adwin_flags["PM10"],
+    "PSI_AQI": psi_scores["AQI"],
+    "PSI_PM25": psi_scores["PM25"],
+    "MAPE": mape_score,
+    "Drift_Score": drift_score
+}])
+
+if os.path.exists(DRIFT_LOG_FILE):
+    drift_log_entry.to_csv(DRIFT_LOG_FILE, mode="a", header=False, index=False)
+else:
+    drift_log_entry.to_csv(DRIFT_LOG_FILE, index=False)
+
+
+# ---------------- STEP 6: LOG MODEL DECISION ----------------
+
+model_log_entry = pd.DataFrame([{
+    "Date": datetime.now(),
+    "Selected_Model": model_choice,
+    "Drift_Score": drift_score
+}])
+
+if os.path.exists(MODEL_LOG_FILE):
+    model_log_entry.to_csv(MODEL_LOG_FILE, mode="a", header=False, index=False)
+else:
+    model_log_entry.to_csv(MODEL_LOG_FILE, index=False)
+
+
+print("Drift and Model logs updated")
+print("Pipeline Completed Successfully")

@@ -50,7 +50,7 @@ try:
     }
     
     # Pass the single row through your sub-index logic
-    new_row_final = get_all_subindices_single(new_row_raw)
+    new_row_final = get_all_subindices_single(new_row)
     
     # Append to the main dataframe
     new_df = pd.DataFrame([new_row_final])
@@ -120,6 +120,7 @@ forecast_df = pd.DataFrame({
 forecast_df.to_csv(FORECAST_FILE, index=False)
 
 print("Forecast generated and saved.")
+
 
 
 

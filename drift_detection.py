@@ -23,7 +23,7 @@ def check_adwin_drift(latest_row):
             continue
 
         detector.update(val)
-        drift_flags[col] = detector.change_detected
+        drift_flags[col] = detector.drift_detected
 
     return drift_flags
 

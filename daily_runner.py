@@ -78,6 +78,7 @@ print("Training VECM model...")
 
 # Prepare data for VECM (Numeric only, drop non-numeric columns like 'Checks')
 # We select columns that have valid data
+print(df.columns)
 train_df = df[['Date', 'AQI', 'PM2.5_SubIndex', 'PM10_SubIndex', 'Temp', 'CO_SubIndex']].copy()
 train_df['Date'] = pd.to_datetime(train_df['Date'])
 train_df = train_df.set_index('Date')
@@ -120,6 +121,7 @@ forecast_df = pd.DataFrame({
 forecast_df.to_csv(FORECAST_FILE, index=False)
 
 print("Forecast generated and saved.")
+
 
 
 

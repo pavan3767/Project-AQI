@@ -1,3 +1,4 @@
+import numpy as np
 ## PM2.5 Sub-Index calculation
 def get_PM25_subindex(x):
     if x <= 30:

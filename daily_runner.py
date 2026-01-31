@@ -104,8 +104,20 @@ psi_scores = {
     "PM25": check_psi_drift(df, "PM2.5_SubIndex")
 }
 
-# For now simple placeholder
-mape_score = 10
+if os.path.exists("forecast_history.csv"):
+    forecast_hist = pd.read_csv("forecast_history.csv")
+    forecast_hist["Target_Date"] = pd.to_datetime(forecast_hist["Target_Date"])
+
+    if len(forecast_hist) >= 7:
+        mape_score = compute_rolling_mape(
+            df[["Date", "AQI"]],
+            forecast_hist,
+            window=7
+        )
+    else:
+        mape_score = None
+    
+if mape_score is None: mape_score = 0
 
 drift_score = calculate_drift_score(adwin_flags, psi_scores, mape_score)
 model_choice = select_model(drift_score)
@@ -173,3 +185,4 @@ else:
 
 print("Drift and Model logs updated")
 print("Pipeline Completed Successfully")
+

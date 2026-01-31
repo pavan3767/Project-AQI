@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 from AQI_SubIndex import get_all_subindices_single
-from drift_detection import check_adwin_drift, check_psi_drift, rolling_mape
+from drift_detection import check_adwin_drift, check_psi_drift, compute_rolling_mape
 from model_selector import calculate_drift_score, select_model
 from forecast_models import vecm_forecast, prophet_forecast
 
@@ -185,4 +185,5 @@ else:
 
 print("Drift and Model logs updated")
 print("Pipeline Completed Successfully")
+
 

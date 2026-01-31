@@ -114,8 +114,8 @@ if os.path.exists("forecast_history.csv"):
             forecast_hist,
             window=7
         )
-    else:
-        mape_score = None
+    else:mape_score = None
+else:mape_score = None
     
 if mape_score is None: mape_score = 0
 
@@ -149,8 +149,31 @@ forecast_df.to_csv(FORECAST_FILE, index=False)
 
 print("Forecast Saved")
 
+# ---------------- STEP 5:SAVE FORECAST HISTORY (1-step ahead) ----------------
 
-# ---------------- STEP 5: LOG DRIFT ----------------
+FORECAST_HISTORY_FILE = "forecast_history.csv"
+
+next_day_forecast = pd.DataFrame([{
+    "Date": datetime.now().date(),
+    "Target_Date": future_dates[0],          # D+1 only
+    "Predicted_AQI": predicted_aqi[0],
+    "Model": model_choice
+}])
+
+if os.path.exists(FORECAST_HISTORY_FILE):
+    next_day_forecast.to_csv(
+        FORECAST_HISTORY_FILE,
+        mode="a",
+        header=False,
+        index=False
+    )
+else:
+    next_day_forecast.to_csv(
+        FORECAST_HISTORY_FILE,
+        index=False
+    )
+
+# ---------------- STEP 6: LOG DRIFT ----------------
 
 drift_log_entry = pd.DataFrame([{
     "Date": datetime.now(),
@@ -169,7 +192,7 @@ else:
     drift_log_entry.to_csv(DRIFT_LOG_FILE, index=False)
 
 
-# ---------------- STEP 6: LOG MODEL DECISION ----------------
+# ---------------- STEP 7: LOG MODEL DECISION ----------------
 
 model_log_entry = pd.DataFrame([{
     "Date": datetime.now(),
@@ -185,5 +208,6 @@ else:
 
 print("Drift and Model logs updated")
 print("Pipeline Completed Successfully")
+
 
 

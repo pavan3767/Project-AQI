@@ -149,7 +149,7 @@ forecast_df.to_csv(FORECAST_FILE, index=False)
 
 print("Forecast Saved")
 
-# ---------------- STEP 5:SAVE FORECAST HISTORY (1-step ahead) ----------------
+# ---------------- STEP 5:SAVE FORECAST HISTORY for calculating mape ----------------
 
 FORECAST_HISTORY_FILE = "forecast_history.csv"
 
@@ -208,6 +208,7 @@ else:
 
 print("Drift and Model logs updated")
 print("Pipeline Completed Successfully")
+
 
 
 

@@ -59,9 +59,28 @@ def check_psi_drift(df, column, window=30):
 
 
 # ---------- MAPE ----------
-def rolling_mape(actual, predicted):
+def compute_rolling_mape(actual_df, forecast_df, window=7):
+    """
+    actual_df: DataFrame with ['Date', 'AQI']
+    forecast_df: DataFrame with ['Target_Date', 'Predicted_AQI']
+    """
 
-    actual = np.array(actual)
-    predicted = np.array(predicted)
+    merged = actual_df.merge(
+        forecast_df,
+        left_on="Date",
+        right_on="Target_Date",
+        how="inner"
+    )
 
-    return np.mean(np.abs((actual - predicted) / (actual + 1e-6))) * 100
+    if len(merged) < window:
+        return None  # Not enough data yet
+
+    recent = merged.tail(window)
+
+    mape = (
+        abs(recent["AQI"] - recent["Predicted_AQI"]) /
+        (recent["AQI"] + 1e-6)
+    ).mean() * 100
+
+    return mape
+

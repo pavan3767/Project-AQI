@@ -13,7 +13,7 @@ st.set_page_config(page_title="AQI Forecaster", layout="wide")
 API_KEY = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
 if API_KEY:
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash') # Fast model for quick UI loads
+    model = genai.GenerativeModel('gemini-2.5-flash') # Fast model for quick UI loads
 else:
     st.warning("⚠️ Gemini API Key not found. Please set GEMINI_API_KEY in secrets. AI features will be disabled.")
 
